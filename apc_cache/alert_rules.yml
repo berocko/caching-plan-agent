@@ -1,0 +1,96 @@
+# APC Keyword Cache Subsystem — Prometheus alert rules.
+#
+# Blueprint §11.2: Alert conditions and severity levels.
+# These are Prometheus-compatible rules for use with Alertmanager.
+
+groups:
+  - name: apc_cache_alerts
+    interval: 60s
+    rules:
+      # ── P1: Cache hit rate drop ──────────────────────────
+      - alert: APCCacheHitRateDrop
+        expr: |
+          (
+            rate(apc_cache_hit_total[15m])
+            /
+            (rate(apc_cache_hit_total[15m]) + rate(apc_cache_miss_total[15m]))
+          )
+          <
+          (
+            rate(apc_cache_hit_total[1h] offset 1h)
+            /
+            (rate(apc_cache_hit_total[1h] offset 1h) + rate(apc_cache_miss_total[1h] offset 1h))
+          ) * 0.7
+        for: 10m
+        labels:
+          severity: P1
+        annotations:
+          summary: "Cache hit rate dropped > 30 % vs previous hour"
+          description: >
+            Current 15-min hit rate is {{ $value | humanizePercentage }},
+            previous 1h average was higher. Possible keyword drift or model degradation.
+
+      # ── P2: Normalization fallback rate ──────────────────
+      - alert: APCNormalizationFallbackHigh
+        expr: |
+          sum(rate(apc_kw_normalization_fallback_total[10m]))
+          /
+          (
+            sum(rate(apc_kw_normalization_action_total[10m]))
+            +
+            sum(rate(apc_kw_normalization_fallback_total[10m]))
+          ) > 0.10
+        for: 5m
+        labels:
+          severity: P2
+        annotations:
+          summary: "Keyword normalization fallback rate > 10 %"
+          description: >
+            LLM API may be unstable. Check fallback reason distribution
+            (timeout, bad_format, hallucination, entity).
+
+      # ── P2: Drift rate high ──────────────────────────────
+      - alert: APCKeywordDriftHigh
+        expr: |
+          sum(rate(apc_kw_cache_drift_total{direction="changed"}[30m]))
+          /
+          (
+            sum(rate(apc_kw_cache_drift_total{direction="changed"}[30m]))
+            +
+            sum(rate(apc_kw_cache_drift_total{direction="stable"}[30m]))
+          ) > 0.20
+        for: 30m
+        labels:
+          severity: P2
+        annotations:
+          summary: "Keyword drift rate > 20 % for 30 minutes"
+          description: >
+            Keyword index is changing rapidly. Check for anomalous writes
+            or cold-start effects.
+
+      # ── P3: Keyword index size large ─────────────────────
+      - alert: APCKeywordIndexLarge
+        expr: apc_kw_index_size > 5000
+        for: 10m
+        labels:
+          severity: P3
+        annotations:
+          summary: "Keyword index size exceeds 5000"
+          description: >
+            Current size: {{ $value }}. Consider switching to Redis Stack VECTOR
+            or pruning obsolete keywords.
+
+      # ── P2: Model version inconsistency ──────────────────
+      - alert: APCModelVersionInconsistent
+        expr: |
+          # This requires a separate consistency gauge to be exported.
+          # apc_model_ver_inconsistent_keywords_ratio > 0.10
+          absent_over_time(apc_embed_model_version[5m])
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Embedding model version gauge absent"
+          description: >
+            The embed_model_version metric is not being reported.
+            Check that the APC lifespan has started correctly.
