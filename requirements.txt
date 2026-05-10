@@ -1,0 +1,10 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+redis[hiredis]>=5.0.0
+langgraph>=0.2.0
+sentence-transformers>=3.0.0
+numpy>=1.26.0
+prometheus-client>=0.20.0
+pydantic>=2.0.0
+sqlalchemy[asyncio]>=2.0.0
+asyncpg>=0.29.0
