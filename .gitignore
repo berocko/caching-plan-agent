@@ -1,2 +1,115 @@
-.plan
+#=========================
+#自定义目录
+#=========================
+/plan/
+
+
+# ========================
+# 操作系统生成 (macOS)
+# ========================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ========================
+# Python 运行时与编译产物
+# ========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# 分发/打包
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+sdist/
+*.whl
+
+# ========================
+# 虚拟环境
+# ========================
+.venv/
+venv/
+env/
+.env/
+pythonenv/
+# 如果用 pipenv
+Pipfile.lock
+
+# ========================
+# 环境变量与密钥
+# ========================
 .env
+.env.*
+!.env.example       # 如果你有示例文件，保留模板
+*.key
+*.pem
+secrets.yaml
+credentials.json
+
+# ========================
+# 日志与临时文件
+# ========================
+*.log
+*.tmp
+*.swp
+/logs/
+/tmp/
+*.bak
+
+# ========================
+# 编辑器 & IDE (VSCode, Claude Code 等)
+# ========================
+.vscode/
+.idea/
+*.sublime-*
+*.code-workspace
+
+# Claude Code 项目配置（如本地调试 token，按需保留或忽略）
+.claude/
+# 如果某些 Claude 配置需要共享，用 ! 恢复
+# !.claude/settings.json
+
+# ========================
+# LangGraph & 项目特定
+# ========================
+# 如果你的图中保存了本地状态的序列化文件
+*.pickle
+*.pkl
+/graph_state/
+/checkpoints/
+# 如果有本地向量存储或索引
+/faiss_index/
+/chroma_db/
+/.langgraph/
+
+# 如果你有本地测试数据
+/test_data/
+*.db
+*.sqlite3
+
+# ========================
+# Jupyter Notebook (可选)
+# ========================
+.ipynb_checkpoints/
+*.ipynb
+# 若需保留 notebook，去掉上面 *.ipynb 并只忽略 checkpoints
+
+# ========================
+# 其他
+# ========================
+# pytest 缓存
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# coverage 报告
+htmlcov/
+.coverage
+coverage.xml
+
+
